@@ -1,16 +1,31 @@
-# Djavu NetX — Next.js 14 + Supabase
+# Djavu NetX — Next.js 14 + MySQL
 
-Aplicación ecommerce para muebles personalizados migrada a **Next.js 14 (App Router)** con **TypeScript**, **TailwindCSS**, **shadcn/ui** y **Supabase**.
+Aplicación ecommerce de muebles personalizados ejecutándose en **Next.js 14 (App Router)** con base de datos **MySQL 8** para entorno local y despliegue en Hostinger.
 
 ---
 
-## Stack principal
+## Stack
 
-- Next.js 14 (App Router)
+- Next.js 14 + App Router
 - React 18 + TypeScript
 - TailwindCSS + shadcn/ui
-- Supabase (auth + base de datos)
-- TanStack Query
+- MySQL 8
+
+---
+
+## Estructura de base de datos MySQL
+
+Se añadió el esquema completo migrado desde Supabase/PostgreSQL a MySQL en:
+
+- `database/mysql/schema.sql`
+
+Incluye:
+
+- tablas principales (`profiles`, `products`, `orders`, `order_items`, `service_orders`, etc.)
+- extensiones funcionales (`coupons`, `shipping_methods`, `invoices`, `affiliates`, `affiliate_commissions`, `stock_movements`, `activity_logs`)
+- `ENUM` equivalentes para roles, estado de pedido, tipo de mueble y método de pago
+- triggers para numeración automática de `orders`, `service_orders` e `invoices`
+- seed de métodos de envío para Cuba
 
 ---
 
@@ -18,86 +33,91 @@ Aplicación ecommerce para muebles personalizados migrada a **Next.js 14 (App Ro
 
 - Node.js 18.18+ (recomendado Node 20 LTS)
 - npm 9+
-- Proyecto Supabase activo
+- MySQL 8+
 
 ---
 
 ## Variables de entorno
 
-Crea un archivo `.env.local` en la raíz del proyecto:
+Crea `.env.local`:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<tu-anon-public-key>
+NODE_ENV=development
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# MySQL
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=tu_password
+MYSQL_DATABASE=djavu_netx
 ```
 
-> Estas variables son obligatorias para autenticación, lectura/escritura de datos y sesión.
+> Si usas SSL en producción (Hostinger), añade variables SSL según tu panel.
 
 ---
 
-## Ejecución local (desarrollo)
+## Levantar la base de datos local
 
-1. **Clonar repositorio**
-   ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd djavu-netx
-   ```
+1. Crear base de datos y estructura:
 
-2. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
+```bash
+mysql -u root -p < database/mysql/schema.sql
+```
 
-3. **Configurar entorno**
-   - Crear `.env.local` con las variables anteriores.
+2. Verificar tablas:
 
-4. **Levantar servidor de desarrollo**
-   ```bash
-   npm run dev
-   ```
-
-5. **Abrir aplicación**
-   - `http://localhost:3000`
+```bash
+mysql -u root -p -e "USE djavu_netx; SHOW TABLES;"
+```
 
 ---
 
-## Build y ejecución local en modo producción
+## Ejecutar el proyecto localmente
 
-1. Generar build:
+1. Instalar dependencias:
 
 ```bash
-npm run build
+npm install
 ```
 
-2. Ejecutar servidor de producción:
+2. Iniciar en desarrollo:
 
 ```bash
-npm run start
+npm run dev
 ```
 
 3. Abrir:
+
 - `http://localhost:3000`
 
 ---
 
-## Despliegue en Hostinger (Node Hosting compartido)
+## Build local (modo producción)
 
-Este proyecto está preparado con `output: "standalone"` en `next.config.js`.
+```bash
+npm run build
+npm run start
+```
 
-### 1) Preparar proyecto para deploy
+---
 
-En local:
+## Despliegue en Hostinger (Node Hosting compartido + MySQL)
+
+> El proyecto está configurado con `output: "standalone"` en `next.config.js`.
+
+### 1) Preparar build
 
 ```bash
 npm install
 npm run build
 ```
 
-Se generará `.next/standalone` y `.next/static`.
+### 2) Archivos a subir
 
-### 2) Archivos/directorios que debes subir al hosting
-
-Sube al servidor (por ejemplo por SFTP/Administrador de archivos):
+Sube al hosting:
 
 - `.next/standalone/` (contenido)
 - `.next/static/`
@@ -105,48 +125,50 @@ Sube al servidor (por ejemplo por SFTP/Administrador de archivos):
 - `package.json`
 - `next.config.js`
 
-> Si Hostinger te exige carpeta de aplicación específica (ej. `app/`), respeta esa ruta y sube ahí estos archivos.
+### 3) Configurar MySQL en Hostinger
 
-### 3) Configurar variables de entorno en Hostinger
+1. Crea una base de datos MySQL desde hPanel.
+2. Crea usuario y permisos sobre esa base.
+3. Importa `database/mysql/schema.sql` desde phpMyAdmin o por consola.
 
-En el panel de Node.js de Hostinger, define:
+### 4) Variables de entorno en Hostinger
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `NODE_ENV=production`
-- `PORT` (si Hostinger no lo inyecta automáticamente)
-
-### 4) Configurar comando de inicio
-
-Según el panel de Hostinger:
-
-- **Startup file**: `server.js` (incluido en standalone)
-- o **Start command**: `node server.js`
-
-> Si subiste el contenido de `.next/standalone` dentro de una subcarpeta, ajusta la ruta (ej. `node standalone/server.js`).
-
-### 5) Reiniciar aplicación
-
-- Reinicia el servicio Node.js desde el panel.
-- Verifica que la app abra y que autenticación y consultas a Supabase funcionen.
-
----
-
-## Checklist post-despliegue
-
-- [ ] Carga homepage correctamente.
-- [ ] Login/registro en Supabase funciona.
-- [ ] Catálogo de productos carga desde base de datos.
-- [ ] Carrito y checkout operativos.
-- [ ] Panel admin accesible para usuarios con rol manager.
-
----
-
-## Scripts disponibles
+Configura en el panel Node.js:
 
 ```bash
-npm run dev      # desarrollo
-npm run build    # build producción
-npm run start    # ejecutar build en producción
-npm run lint     # lint
+NODE_ENV=production
+PORT=3000
+NEXT_PUBLIC_APP_URL=https://tu-dominio.com
+MYSQL_HOST=<host_mysql_hostinger>
+MYSQL_PORT=3306
+MYSQL_USER=<usuario_mysql>
+MYSQL_PASSWORD=<password_mysql>
+MYSQL_DATABASE=<base_mysql>
 ```
+
+### 5) Startup command
+
+- Startup file: `server.js`
+- o comando: `node server.js`
+
+### 6) Reiniciar app
+
+- Reinicia el proceso Node.js en Hostinger.
+- Valida homepage, catálogo, checkout, pedidos y panel admin.
+
+---
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
+
+---
+
+## Nota de migración
+
+Se migró el modelo de datos a MySQL y se incorporó el SQL equivalente al esquema original de Supabase en `database/mysql/schema.sql`.
