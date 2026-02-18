@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,10 +31,10 @@ export default function CartPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild>
-              <Link to="/products">Ver Productos</Link>
+              <Link href="/products">Ver Productos</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/customize">Diseñar Pieza Personalizada</Link>
+              <Link href="/customize">Diseñar Pieza Personalizada</Link>
             </Button>
           </div>
         </motion.div>
@@ -185,7 +187,7 @@ export default function CartPage() {
                 <div className="mt-6 space-y-3">
                   {user ? (
                     <Button className="w-full" size="lg" asChild>
-                      <Link to="/checkout">
+                      <Link href="/checkout">
                         Proceder al Pago
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
@@ -193,7 +195,7 @@ export default function CartPage() {
                   ) : (
                     <>
                       <Button className="w-full" size="lg" asChild>
-                        <Link to="/auth">Iniciar Sesión para Pagar</Link>
+                        <Link href="/auth">Iniciar Sesión para Pagar</Link>
                       </Button>
                       <p className="text-sm text-muted-foreground text-center">
                         Necesitas iniciar sesión para completar tu pedido.
@@ -201,7 +203,7 @@ export default function CartPage() {
                     </>
                   )}
                   <Button variant="outline" className="w-full" asChild>
-                    <Link to="/products">Continuar Comprando</Link>
+                    <Link href="/products">Continuar Comprando</Link>
                   </Button>
                 </div>
               </CardContent>
