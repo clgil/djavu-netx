@@ -1,73 +1,152 @@
-# Welcome to your Lovable project
+# Djavu NetX — Next.js 14 + Supabase
 
-## Project info
+Aplicación ecommerce para muebles personalizados migrada a **Next.js 14 (App Router)** con **TypeScript**, **TailwindCSS**, **shadcn/ui** y **Supabase**.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## Stack principal
 
-There are several ways of editing your application.
+- Next.js 14 (App Router)
+- React 18 + TypeScript
+- TailwindCSS + shadcn/ui
+- Supabase (auth + base de datos)
+- TanStack Query
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Requisitos previos
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js 18.18+ (recomendado Node 20 LTS)
+- npm 9+
+- Proyecto Supabase activo
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Variables de entorno
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Crea un archivo `.env.local` en la raíz del proyecto:
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<tu-anon-public-key>
 ```
 
-**Edit a file directly in GitHub**
+> Estas variables son obligatorias para autenticación, lectura/escritura de datos y sesión.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## Ejecución local (desarrollo)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. **Clonar repositorio**
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>
+   cd djavu-netx
+   ```
 
-## What technologies are used for this project?
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-This project is built with:
+3. **Configurar entorno**
+   - Crear `.env.local` con las variables anteriores.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+4. **Levantar servidor de desarrollo**
+   ```bash
+   npm run dev
+   ```
 
-## How can I deploy this project?
+5. **Abrir aplicación**
+   - `http://localhost:3000`
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## Build y ejecución local en modo producción
 
-Yes, you can!
+1. Generar build:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+npm run build
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+2. Ejecutar servidor de producción:
+
+```bash
+npm run start
+```
+
+3. Abrir:
+- `http://localhost:3000`
+
+---
+
+## Despliegue en Hostinger (Node Hosting compartido)
+
+Este proyecto está preparado con `output: "standalone"` en `next.config.js`.
+
+### 1) Preparar proyecto para deploy
+
+En local:
+
+```bash
+npm install
+npm run build
+```
+
+Se generará `.next/standalone` y `.next/static`.
+
+### 2) Archivos/directorios que debes subir al hosting
+
+Sube al servidor (por ejemplo por SFTP/Administrador de archivos):
+
+- `.next/standalone/` (contenido)
+- `.next/static/`
+- `public/`
+- `package.json`
+- `next.config.js`
+
+> Si Hostinger te exige carpeta de aplicación específica (ej. `app/`), respeta esa ruta y sube ahí estos archivos.
+
+### 3) Configurar variables de entorno en Hostinger
+
+En el panel de Node.js de Hostinger, define:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NODE_ENV=production`
+- `PORT` (si Hostinger no lo inyecta automáticamente)
+
+### 4) Configurar comando de inicio
+
+Según el panel de Hostinger:
+
+- **Startup file**: `server.js` (incluido en standalone)
+- o **Start command**: `node server.js`
+
+> Si subiste el contenido de `.next/standalone` dentro de una subcarpeta, ajusta la ruta (ej. `node standalone/server.js`).
+
+### 5) Reiniciar aplicación
+
+- Reinicia el servicio Node.js desde el panel.
+- Verifica que la app abra y que autenticación y consultas a Supabase funcionen.
+
+---
+
+## Checklist post-despliegue
+
+- [ ] Carga homepage correctamente.
+- [ ] Login/registro en Supabase funciona.
+- [ ] Catálogo de productos carga desde base de datos.
+- [ ] Carrito y checkout operativos.
+- [ ] Panel admin accesible para usuarios con rol manager.
+
+---
+
+## Scripts disponibles
+
+```bash
+npm run dev      # desarrollo
+npm run build    # build producción
+npm run start    # ejecutar build en producción
+npm run lint     # lint
+```

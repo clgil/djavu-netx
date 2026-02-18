@@ -1,5 +1,8 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -38,7 +41,8 @@ const statusSteps: OrderStatus[] = [
 ];
 
 export default function OrderDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const { user } = useAuth();
 
   const { data: order, isLoading } = useQuery({
@@ -82,7 +86,7 @@ export default function OrderDetailPage() {
       <div className="container py-12 text-center">
         <p className="text-muted-foreground">Por favor, inicia sesión para ver este pedido.</p>
         <Button asChild className="mt-4">
-          <Link to="/auth">Iniciar Sesión</Link>
+          <Link href="/auth">Iniciar Sesión</Link>
         </Button>
       </div>
     );
@@ -113,7 +117,7 @@ export default function OrderDetailPage() {
         <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
         <h1 className="font-serif text-3xl font-bold mb-2">Pedido No Encontrado</h1>
         <Button asChild className="mt-4">
-          <Link to="/orders">Volver a Pedidos</Link>
+          <Link href="/orders">Volver a Pedidos</Link>
         </Button>
       </div>
     );
@@ -131,7 +135,7 @@ export default function OrderDetailPage() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" asChild>
-            <Link to="/orders">
+            <Link href="/orders">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

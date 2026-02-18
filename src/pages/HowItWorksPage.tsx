@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { Ruler, PaintBucket, TreePine, Sparkles, ShoppingCart, Truck } from "lucide-react";
 

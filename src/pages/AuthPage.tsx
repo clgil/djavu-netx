@@ -1,5 +1,8 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -47,15 +50,15 @@ type SignInValues = z.infer<typeof signInSchema>;
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 export default function AuthPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { signIn, signUp, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirigir si ya está conectado
-  if (user) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (user) router.replace("/");
+  }, [user, router]);
+
+  if (user) return null;
 
   const signInForm = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -92,7 +95,7 @@ export default function AuthPage() {
     }
 
     toast.success("¡Bienvenido de nuevo!");
-    navigate("/");
+    router.push("/");
   };
 
   const handleSignUp = async (values: SignUpValues) => {
@@ -127,7 +130,7 @@ export default function AuthPage() {
         className="w-full max-w-md"
       >
         <div className="flex justify-center mb-8">
-          <Link to="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Armchair className="h-10 w-10 text-primary" />
             <span className="font-serif text-2xl font-bold text-primary">
               Djavu
