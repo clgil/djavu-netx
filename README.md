@@ -1,73 +1,243 @@
-# Welcome to your Lovable project
+# Djavu NetX — Next.js 14 + MySQL
 
-## Project info
+Aplicación ecommerce de muebles personalizados ejecutándose en **Next.js 14 (App Router)** con base de datos **MySQL 8** para entorno local y despliegue en Hostinger.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## Stack
 
-There are several ways of editing your application.
+- Next.js 14 + App Router
+- React 18 + TypeScript
+- TailwindCSS + shadcn/ui
+- MySQL 8
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Estructura de base de datos MySQL
 
-Changes made via Lovable will be committed automatically to this repo.
+Se añadió el esquema completo migrado desde Supabase/PostgreSQL a MySQL en:
 
-**Use your preferred IDE**
+- `database/mysql/schema.sql`
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Incluye:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- tablas principales (`profiles`, `products`, `orders`, `order_items`, `service_orders`, etc.)
+- extensiones funcionales (`coupons`, `shipping_methods`, `invoices`, `affiliates`, `affiliate_commissions`, `stock_movements`, `activity_logs`)
+- `ENUM` equivalentes para roles, estado de pedido, tipo de mueble y método de pago
+- triggers para numeración automática de `orders`, `service_orders` e `invoices`
+- seed de métodos de envío para Cuba
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Requisitos previos
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Node.js 18.18+ (recomendado Node 20 LTS)
+- npm 9+
+- MySQL 8+
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Variables de entorno
+
+Crea `.env.local`:
+
+```bash
+NODE_ENV=development
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# MySQL
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=tu_password
+MYSQL_DATABASE=djavu_netx
+```
+
+> Si usas SSL en producción (Hostinger), añade variables SSL según tu panel.
+
+---
+
+## Levantar la base de datos local
+
+1. Crear base de datos y estructura:
+
+```bash
+mysql -u root -p < database/mysql/schema.sql
+```
+
+2. Verificar tablas:
+
+```bash
+mysql -u root -p -e "USE djavu_netx; SHOW TABLES;"
+```
+
+---
+
+## Ejecutar el proyecto localmente
+
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Iniciar en desarrollo:
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. Abrir:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `http://localhost:3000`
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Build local (modo producción)
 
-## What technologies are used for this project?
+```bash
+npm run build
+npm run start
+```
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Despliegue en Hostinger (Node Hosting compartido + MySQL)
 
-## How can I deploy this project?
+> El proyecto está configurado con `output: "standalone"` en `next.config.js`.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### 1) Preparar build
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+npm install
+npm run build
+```
 
-Yes, you can!
+### 2) Archivos a subir
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Sube al hosting:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `.next/standalone/` (contenido)
+- `.next/static/`
+- `public/`
+- `package.json`
+- `next.config.js`
+
+### 3) Configurar MySQL en Hostinger
+
+1. Crea una base de datos MySQL desde hPanel.
+2. Crea usuario y permisos sobre esa base.
+3. Importa `database/mysql/schema.sql` desde phpMyAdmin o por consola.
+
+### 4) Variables de entorno en Hostinger
+
+Configura en el panel Node.js:
+
+```bash
+NODE_ENV=production
+PORT=3000
+NEXT_PUBLIC_APP_URL=https://tu-dominio.com
+MYSQL_HOST=<host_mysql_hostinger>
+MYSQL_PORT=3306
+MYSQL_USER=<usuario_mysql>
+MYSQL_PASSWORD=<password_mysql>
+MYSQL_DATABASE=<base_mysql>
+```
+
+### 5) Startup command
+
+- Startup file: `server.js`
+- o comando: `node server.js`
+
+### 6) Reiniciar app
+
+- Reinicia el proceso Node.js en Hostinger.
+- Valida homepage, catálogo, checkout, pedidos y panel admin.
+
+---
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
+
+---
+
+## Nota de migración
+
+Se migró el modelo de datos a MySQL y se incorporó el SQL equivalente al esquema original de Supabase en `database/mysql/schema.sql`.
+
+
+## Mejoras funcionales implementadas
+
+### Sistema automático de Órdenes de Servicio
+
+- Generación automática cuando un pedido tiene mueble personalizado o cuando el pedido queda en estado `deposit_paid`.
+- Registro en tabla `service_orders` con:
+  - número de orden de servicio
+  - especificaciones técnicas
+  - QR de seguimiento
+  - PDF embebido en base64 (`technical_specifications.service_order_pdf_base64`).
+- Disponible para descarga desde el panel de cliente (detalle de pedido).
+
+### Sistema automático de Facturación
+
+- Generación automática de factura cuando:
+  - pedido estándar pagado al 100%
+  - pedido personalizado pagado al 50% (depósito) o 100%.
+- Registro histórico en tabla `invoices`.
+- PDF embebido en base64 (`items_detail.invoice_pdf_base64`) y descargable desde detalle de pedido.
+- Soporte para KPIs financieros en dashboard.
+
+### Checkout con métodos de pago extendidos
+
+- Métodos soportados:
+  - Transferencia bancaria
+  - Efectivo
+  - PayPal (simulado)
+  - Stripe (simulado)
+  - Tropipay (simulado)
+  - Qbapay (simulado)
+- Para transferencia/efectivo se exige comprobante adjunto.
+- Modalidad de cobro:
+  - estándar: pago 100%
+  - personalizado: 50% o 100%.
+
+### Calculadora reactiva en personalización
+
+- Cálculo en tiempo real ante cambios en:
+  - dimensiones
+  - tipo de madera
+  - acabado
+  - extras.
+- Integrada con `cost_sheets` activa (mano de obra, margen, overhead y complejidad por tipo).
+
+### Dashboard avanzado (Sales Manager)
+
+Incluye métricas ampliadas:
+
+- facturación total
+- ingresos totales
+- depósitos recibidos
+- balance pendiente
+- ingresos por período (7/30 días)
+- ingresos por método de pago
+- órdenes en producción
+- tipo de mueble personalizado más solicitado
+- tiempo promedio estimado de fabricación
+
+### Gestión de productos (CRUD)
+
+Nueva pantalla admin para:
+
+- crear productos
+- editar productos
+- eliminar productos
+- activar/desactivar
+- gestionar múltiples imágenes por URL (primera como principal)

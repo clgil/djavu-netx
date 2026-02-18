@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { formatCUP } from "@/lib/currency";
 import { useQuery } from "@tanstack/react-query";
