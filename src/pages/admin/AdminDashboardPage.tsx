@@ -1,10 +1,12 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, DollarSign, Clock, CheckCircle, TrendingUp, Users } from "lucide-react";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, OrderStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatCUP } from "@/lib/currency";
 
@@ -142,7 +144,7 @@ export default function AdminDashboardPage() {
             <CardTitle>Pedidos Recientes</CardTitle>
             <CardDescription>Últimos pedidos recibidos</CardDescription>
           </div>
-          <Link to="/admin/orders">
+          <Link href="/admin/orders">
             <Button variant="outline" size="sm">Ver Todos</Button>
           </Link>
         </CardHeader>

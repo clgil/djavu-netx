@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -57,7 +59,7 @@ const steps = [
 ];
 
 export default function CheckoutPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, profile } = useAuth();
   const { items, subtotal, depositAmount, remainingBalance, clearCart } = useCart();
   const [currentStep, setCurrentStep] = useState(1);
@@ -86,10 +88,11 @@ export default function CheckoutPage() {
     },
   });
 
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
+  useEffect(() => {
+    if (!user) router.replace("/auth");
+  }, [user, router]);
+
+  if (!user) return null;
 
   if (items.length === 0) {
     navigate("/cart");

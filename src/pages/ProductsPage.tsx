@@ -1,6 +1,8 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Search, Filter, Grid, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,7 +153,7 @@ export default function ProductsPage() {
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
               <Card className="overflow-hidden card-hover group">
-                <Link to={`/products/${product.id}`}>
+                <Link href={`/products/${product.id}`}>
                   <div className="relative h-48 bg-muted flex items-center justify-center overflow-hidden">
                     {product.images && product.images.length > 0 ? (
                       <img
@@ -178,7 +180,7 @@ export default function ProductsPage() {
                   </div>
                 </Link>
                 <CardContent className="p-4">
-                  <Link to={`/products/${product.id}`}>
+                  <Link href={`/products/${product.id}`}>
                     <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors">
                       {product.name}
                     </h3>
@@ -232,7 +234,7 @@ export default function ProductsPage() {
           Elige tus dimensiones, tipo de madera, acabado y más.
         </p>
         <Button size="lg" variant="secondary" asChild>
-          <Link to="/customize">Diseñar Mueble Personalizado</Link>
+          <Link href="/customize">Diseñar Mueble Personalizado</Link>
         </Button>
       </div>
     </div>
