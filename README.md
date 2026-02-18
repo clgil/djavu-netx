@@ -172,3 +172,72 @@ npm run lint
 ## Nota de migración
 
 Se migró el modelo de datos a MySQL y se incorporó el SQL equivalente al esquema original de Supabase en `database/mysql/schema.sql`.
+
+
+## Mejoras funcionales implementadas
+
+### Sistema automático de Órdenes de Servicio
+
+- Generación automática cuando un pedido tiene mueble personalizado o cuando el pedido queda en estado `deposit_paid`.
+- Registro en tabla `service_orders` con:
+  - número de orden de servicio
+  - especificaciones técnicas
+  - QR de seguimiento
+  - PDF embebido en base64 (`technical_specifications.service_order_pdf_base64`).
+- Disponible para descarga desde el panel de cliente (detalle de pedido).
+
+### Sistema automático de Facturación
+
+- Generación automática de factura cuando:
+  - pedido estándar pagado al 100%
+  - pedido personalizado pagado al 50% (depósito) o 100%.
+- Registro histórico en tabla `invoices`.
+- PDF embebido en base64 (`items_detail.invoice_pdf_base64`) y descargable desde detalle de pedido.
+- Soporte para KPIs financieros en dashboard.
+
+### Checkout con métodos de pago extendidos
+
+- Métodos soportados:
+  - Transferencia bancaria
+  - Efectivo
+  - PayPal (simulado)
+  - Stripe (simulado)
+  - Tropipay (simulado)
+  - Qbapay (simulado)
+- Para transferencia/efectivo se exige comprobante adjunto.
+- Modalidad de cobro:
+  - estándar: pago 100%
+  - personalizado: 50% o 100%.
+
+### Calculadora reactiva en personalización
+
+- Cálculo en tiempo real ante cambios en:
+  - dimensiones
+  - tipo de madera
+  - acabado
+  - extras.
+- Integrada con `cost_sheets` activa (mano de obra, margen, overhead y complejidad por tipo).
+
+### Dashboard avanzado (Sales Manager)
+
+Incluye métricas ampliadas:
+
+- facturación total
+- ingresos totales
+- depósitos recibidos
+- balance pendiente
+- ingresos por período (7/30 días)
+- ingresos por método de pago
+- órdenes en producción
+- tipo de mueble personalizado más solicitado
+- tiempo promedio estimado de fabricación
+
+### Gestión de productos (CRUD)
+
+Nueva pantalla admin para:
+
+- crear productos
+- editar productos
+- eliminar productos
+- activar/desactivar
+- gestionar múltiples imágenes por URL (primera como principal)

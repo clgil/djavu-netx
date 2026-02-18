@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Search, Eye, ChevronRight } from "lucide-react";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, OrderStatus, FURNITURE_TYPE_LABELS, FurnitureType } from "@/lib/types";
+import { ensureServiceOrderAndInvoice } from "@/lib/order-workflows";
 import { useToast } from "@/hooks/use-toast";
 import { formatCUP } from "@/lib/currency";
 
@@ -79,12 +80,45 @@ export default function AdminOrdersPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
-      const { error } = await supabase
+      const { data: updatedOrder, error } = await supabase
         .from("orders")
         .update({ status: newStatus })
-        .eq("id", orderId);
+        .eq("id", orderId)
+        .select("*")
+        .single();
 
       if (error) throw error;
+
+      if (newStatus === "deposit_paid") {
+        const { data: orderItems } = await supabase
+          .from("order_items")
+          .select(`*, product:products(*), custom_wood_type:wood_types(*), custom_finish:finishes(*)`)
+          .eq("order_id", orderId);
+
+        await ensureServiceOrderAndInvoice({
+          order: updatedOrder,
+          user: { id: updatedOrder.user_id, email: null },
+          items: (orderItems || []).map((item: any) => ({
+            id: item.id,
+            type: item.is_custom ? "custom" : "standard",
+            product: item.product,
+            quantity: item.quantity,
+            unitPrice: Number(item.unit_price),
+            totalPrice: Number(item.total_price),
+            customConfig: item.is_custom ? {
+              furnitureType: item.custom_furniture_type,
+              woodType: item.custom_wood_type,
+              finish: item.custom_finish,
+              length: item.custom_length,
+              width: item.custom_width,
+              height: item.custom_height,
+              extras: [],
+              notes: item.custom_notes,
+            } : undefined,
+          })),
+          paidAmount: Number(updatedOrder.deposit_amount),
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });

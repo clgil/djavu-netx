@@ -14,6 +14,7 @@ const navItems = [
   { to: "/admin/service-orders", icon: FileText, label: "Órdenes de Servicio" },
   { to: "/admin/cost-sheet", icon: Calculator, label: "Hoja de Costos" },
   { to: "/admin/customers", icon: Users, label: "Clientes" },
+  { to: "/admin/products", icon: Package, label: "Productos" },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {

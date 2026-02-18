@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -87,6 +87,15 @@ export default function CustomizePage() {
     },
   });
 
+
+  const { data: costSheet } = useQuery({
+    queryKey: ["active-cost-sheet"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("cost_sheets").select("*").eq("is_active", true).single();
+      if (error) throw error;
+      return data;
+    },
+  });
   // Establecer dimensiones por defecto cuando se selecciona el tipo
   useEffect(() => {
     if (selectedType) {
@@ -103,37 +112,36 @@ export default function CustomizePage() {
 
   const currentTypeConfig = selectedType ? furnitureTypes.find((t) => t.type === selectedType) : null;
 
-  // Calcular precio
-  const calculatePrice = () => {
+  const price = useMemo(() => {
     if (!selectedType || !selectedWood || !selectedFinish) return 0;
 
-    const volume = (dimensions.length * dimensions.width * dimensions.height) / 1000000; // m³
-    const surfaceArea = 2 * (dimensions.length * dimensions.width + dimensions.length * dimensions.height + dimensions.width * dimensions.height) / 10000; // m²
+    const volume = (dimensions.length * dimensions.width * dimensions.height) / 1000000;
+    const surfaceArea = (2 * (dimensions.length * dimensions.width + dimensions.length * dimensions.height + dimensions.width * dimensions.height)) / 10000;
 
     const materialCost = volume * selectedWood.cost_per_cubic_meter;
     const finishCost = surfaceArea * selectedFinish.cost_per_square_meter;
-    const laborHours = volume * 40; // Horas de trabajo estimadas
-    const laborCost = laborHours * 25; // $25 CUP/hora
+    const laborHours = volume * 40;
+    const laborRate = Number(costSheet?.labor_rate_per_hour ?? 25);
+    const laborCost = laborHours * laborRate;
 
     const complexityMultipliers: Record<FurnitureType, number> = {
-      dining_table: 1.5,
-      coffee_table: 1.0,
-      bookshelf: 1.2,
-      bed_frame: 1.4,
-      desk: 1.3,
-      cabinet: 1.6,
+      dining_table: Number(costSheet?.complexity_multiplier_dining_table ?? 1.5),
+      coffee_table: Number(costSheet?.complexity_multiplier_coffee_table ?? 1.0),
+      bookshelf: Number(costSheet?.complexity_multiplier_bookshelf ?? 1.2),
+      bed_frame: Number(costSheet?.complexity_multiplier_bed_frame ?? 1.4),
+      desk: Number(costSheet?.complexity_multiplier_desk ?? 1.3),
+      cabinet: Number(costSheet?.complexity_multiplier_cabinet ?? 1.6),
     };
 
     const extrasCost = selectedExtras.reduce((sum, e) => sum + e.base_price, 0);
     const baseCost = (materialCost + laborCost + finishCost + extrasCost) * complexityMultipliers[selectedType];
-    const margin = 0.3;
-    const overhead = 0.15;
+    const margin = Number(costSheet?.profit_margin_percentage ?? 30) / 100;
+    const overhead = Number(costSheet?.overhead_percentage ?? 15) / 100;
     const totalPrice = baseCost * (1 + margin) * (1 + overhead);
 
-    return Math.round(totalPrice);
-  };
+    return Math.max(0, Math.round(totalPrice));
+  }, [selectedType, selectedWood, selectedFinish, dimensions, selectedExtras, costSheet]);
 
-  const price = calculatePrice();
   const deposit = Math.round(price * 0.5);
 
   const canProceed = () => {
@@ -551,7 +559,7 @@ export default function CustomizePage() {
                     </div>
                     <div className="flex justify-between text-sm text-muted-foreground mt-1">
                       <span>Saldo en Entrega</span>
-                      <span>{formatCUP(deposit)}</span>
+                      <span>{formatCUP(Math.max(0, price - deposit))}</span>
                     </div>
                   </div>
                 </div>
