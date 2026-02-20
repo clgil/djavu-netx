@@ -93,6 +93,9 @@ npm install
 
 ```bash
 npm run dev
+npm run build
+npm run start
+npm run lint
 ```
 
 3. Abrir:
