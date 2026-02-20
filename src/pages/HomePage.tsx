@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
@@ -98,7 +100,7 @@ export default function HomePage() {
                 asChild
                 className="text-lg"
               >
-                <Link to="/products">
+                <Link href="/products">
                   Ver Colección
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -109,7 +111,7 @@ export default function HomePage() {
                 asChild
                 className="text-lg bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
               >
-                <Link to="/customize">Diseña el Tuyo</Link>
+                <Link href="/customize">Diseña el Tuyo</Link>
               </Button>
             </div>
           </motion.div>
@@ -166,7 +168,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Button asChild>
-                <Link to="/products">Ver Productos</Link>
+                <Link href="/products">Ver Productos</Link>
               </Button>
             </motion.div>
 
@@ -202,7 +204,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Button variant="default" className="bg-accent hover:bg-accent/90" asChild>
-                <Link to="/customize">Empezar a Diseñar</Link>
+                <Link href="/customize">Empezar a Diseñar</Link>
               </Button>
             </motion.div>
           </div>
@@ -312,7 +314,7 @@ export default function HomePage() {
               cobrar vida. Nuestro equipo está aquí para ayudarte en cada paso.
             </p>
             <Button size="lg" variant="secondary" asChild>
-              <Link to="/customize">
+              <Link href="/customize">
                 Empezar a Personalizar
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
