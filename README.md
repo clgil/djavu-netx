@@ -59,6 +59,8 @@ NEXT_PUBLIC_DB_PROVIDER=mysql
 ```
 
 > Si no defines variables de Supabase, la app arranca en **mock DB mode** (sin crash) mientras conectas MySQL mediante tu capa API/backend.
+
+> Importante: en **mock DB mode** las pantallas cargan sin crash, pero **login/registro real no funciona** hasta que conectes backend de autenticación para MySQL o vuelvas a configurar Supabase Auth.
 > Si usas SSL en producción (Hostinger), añade variables SSL según tu panel.
 
 ---
@@ -91,6 +93,9 @@ npm install
 
 ```bash
 npm run dev
+npm run build
+npm run start
+npm run lint
 ```
 
 3. Abrir:

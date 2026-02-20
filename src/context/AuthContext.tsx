@@ -71,8 +71,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchProfile]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      return { error: error as Error };
+    }
+
+    if (!data?.session?.user) {
+      return { error: new Error("No se pudo crear la sesión de usuario.") };
+    }
+
+    return { error: null };
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
@@ -85,7 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: { full_name: fullName },
       },
     });
-    return { error: error as Error | null };
+
+    return { error: (error as Error) ?? null };
   };
 
   const signOut = async () => {

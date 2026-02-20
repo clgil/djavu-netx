@@ -63,10 +63,10 @@ export function createMockSupabaseClient() {
         return Promise.resolve({ data: { session: null }, error: null });
       },
       signInWithPassword() {
-        return Promise.resolve({ data: { user: null, session: null }, error: null });
+        return Promise.resolve({ data: { user: null, session: null }, error: { message: "Autenticación no disponible en modo MySQL local (sin backend auth)." } });
       },
       signUp() {
-        return Promise.resolve({ data: { user: null, session: null }, error: null });
+        return Promise.resolve({ data: { user: null, session: null }, error: { message: "Registro no disponible en modo MySQL local (sin backend auth)." } });
       },
       signOut() {
         return Promise.resolve({ error: null });

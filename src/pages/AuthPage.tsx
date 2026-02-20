@@ -88,6 +88,8 @@ export default function AuthPage() {
         toast.error("Correo o contraseña incorrectos. Por favor, inténtalo de nuevo.");
       } else if (error.message.includes("Email not confirmed")) {
         toast.error("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
+      } else if (error.message.includes("modo MySQL local")) {
+        toast.error("Autenticación no disponible: configura backend de auth para MySQL o variables de Supabase.");
       } else {
         toast.error(error.message);
       }
@@ -110,6 +112,8 @@ export default function AuthPage() {
     if (error) {
       if (error.message.includes("already registered")) {
         toast.error("Este correo ya está registrado. Por favor, inicia sesión.");
+      } else if (error.message.includes("modo MySQL local")) {
+        toast.error("Registro no disponible: configura backend de auth para MySQL o variables de Supabase.");
       } else {
         toast.error(error.message);
       }
