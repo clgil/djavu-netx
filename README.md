@@ -93,9 +93,6 @@ npm install
 
 ```bash
 npm run dev
-npm run build
-npm run start
-npm run lint
 ```
 
 3. Abrir:
@@ -279,7 +276,10 @@ JWT_SECRET="cambia-este-secreto-en-produccion"
 ```bash
 npm run prisma:generate
 npm run prisma:migrate
+npm run setup:admin
 ```
+
+> `setup:admin` ejecuta el seed para crear/actualizar el usuario administrador con las variables `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME`.
 
 ## Uso por rol
 
@@ -298,3 +298,10 @@ npm run prisma:migrate
 - Gestión global y reportes
 - Gestión de usuarios/roles
 
+
+
+## Guía completa
+
+Para instalación, configuración y despliegue paso a paso (incluyendo seed de admin):
+
+- `INSTALLATION_AND_DEPLOYMENT.md`
