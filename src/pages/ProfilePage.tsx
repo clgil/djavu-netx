@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,7 +34,7 @@ const profileSchema = z.object({
 type ProfileValues = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, profile, refreshProfile } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -61,10 +63,11 @@ export default function ProfilePage() {
     }
   }, [profile, form]);
 
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
+  useEffect(() => {
+    if (!user) router.replace("/auth");
+  }, [user, router]);
+
+  if (!user) return null;
 
   const handleSubmit = async (values: ProfileValues) => {
     setIsSaving(true);

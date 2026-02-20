@@ -19,6 +19,14 @@ export type FurnitureCategory =
   | "shelving"
   | "desks";
 
+export type PaymentMethod =
+  | "cash"
+  | "bank_transfer"
+  | "paypal_simulation"
+  | "stripe_simulation"
+  | "tropipay_simulation"
+  | "qbapay_simulation";
+
 export type FurnitureType =
   | "dining_table"
   | "coffee_table"
@@ -120,6 +128,12 @@ export interface Order {
   remaining_balance: number;
   balance_paid: boolean;
   balance_paid_at: string | null;
+  payment_method?: PaymentMethod | string | null;
+  buyer_name?: string | null;
+  buyer_phone?: string | null;
+  buyer_email?: string | null;
+  shipping_cost?: number;
+  discount_amount?: number;
   shipping_name: string | null;
   shipping_phone: string | null;
   shipping_address: string | null;
@@ -174,6 +188,22 @@ export interface ServiceOrder {
   qr_code_data: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  invoice_number: string;
+  order_id: string;
+  user_id: string | null;
+  buyer_name: string;
+  buyer_phone: string | null;
+  buyer_email: string | null;
+  items_detail: Record<string, unknown>;
+  subtotal: number;
+  total: number;
+  deposit_paid: number;
+  remaining_balance: number;
+  created_at: string;
 }
 
 export interface Notification {

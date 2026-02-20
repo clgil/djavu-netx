@@ -1,5 +1,7 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Package, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +40,7 @@ export default function OrdersPage() {
           Por favor, inicia sesión para ver tus pedidos.
         </p>
         <Button asChild>
-          <Link to="/auth">Iniciar Sesión</Link>
+          <Link href="/auth">Iniciar Sesión</Link>
         </Button>
       </div>
     );
@@ -78,10 +80,10 @@ export default function OrdersPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild>
-              <Link to="/products">Ver Productos</Link>
+              <Link href="/products">Ver Productos</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/customize">Diseñar Pieza Personalizada</Link>
+              <Link href="/customize">Diseñar Pieza Personalizada</Link>
             </Button>
           </div>
         </motion.div>
@@ -153,7 +155,7 @@ export default function OrdersPage() {
                       )}
                     </div>
                     <Button asChild>
-                      <Link to={`/orders/${order.id}`}>
+                      <Link href={`/orders/${order.id}`}>
                         <Eye className="h-4 w-4 mr-2" />
                         Ver Detalles
                       </Link>
