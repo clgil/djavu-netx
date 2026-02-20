@@ -1,5 +1,8 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, ShoppingCart, Package, Ruler, TreePine, PaintBucket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +16,8 @@ import { useCart } from "@/hooks/useCart";
 import { formatCUP } from "@/lib/currency";
 
 export default function ProductDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ slug: string }>();
+  const id = params?.slug;
   const { addStandardItem } = useCart();
 
   const { data: product, isLoading } = useQuery({
@@ -74,7 +78,7 @@ export default function ProductDetailPage() {
         <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
         <h1 className="font-serif text-3xl font-bold mb-2">Producto No Encontrado</h1>
         <Button asChild className="mt-4">
-          <Link to="/products">Volver al Catálogo</Link>
+          <Link href="/products">Volver al Catálogo</Link>
         </Button>
       </div>
     );
@@ -89,7 +93,7 @@ export default function ProductDetailPage() {
       >
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-8 text-sm text-muted-foreground">
-          <Link to="/products" className="hover:text-primary flex items-center gap-1">
+          <Link href="/products" className="hover:text-primary flex items-center gap-1">
             <ArrowLeft className="h-4 w-4" />
             Catálogo
           </Link>
@@ -215,7 +219,7 @@ export default function ProductDetailPage() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((rp) => (
                 <Card key={rp.id} className="overflow-hidden card-hover group">
-                  <Link to={`/products/${rp.id}`}>
+                  <Link href={`/products/${rp.id}`}>
                     <div className="h-40 bg-muted flex items-center justify-center overflow-hidden">
                       {rp.images && rp.images.length > 0 ? (
                         <img
@@ -230,7 +234,7 @@ export default function ProductDetailPage() {
                     </div>
                   </Link>
                   <CardContent className="p-4">
-                    <Link to={`/products/${rp.id}`}>
+                    <Link href={`/products/${rp.id}`}>
                       <h3 className="font-semibold hover:text-primary transition-colors">
                         {rp.name}
                       </h3>

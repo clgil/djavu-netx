@@ -1,14 +1,14 @@
-import { Outlet } from "react-router-dom";
+"use client";
+
+import { ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
-export function MainLayout() {
+export function MainLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1">
-        <Outlet />
-      </main>
+      <main className="flex-1">{children}</main>
       <Footer />
     </div>
   );
