@@ -53,8 +53,12 @@ MYSQL_PORT=3306
 MYSQL_USER=root
 MYSQL_PASSWORD=tu_password
 MYSQL_DATABASE=djavu_netx
+
+# opcional: activar proveedor explícito
+NEXT_PUBLIC_DB_PROVIDER=mysql
 ```
 
+> Si no defines variables de Supabase, la app arranca en **mock DB mode** (sin crash) mientras conectas MySQL mediante tu capa API/backend.
 > Si usas SSL en producción (Hostinger), añade variables SSL según tu panel.
 
 ---
