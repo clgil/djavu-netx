@@ -1,15 +1,18 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { Profile, AppRole } from "@/lib/types";
-import { createClient } from "@/lib/supabase/client";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
+import { AppRole, Profile } from "@/lib/types";
 
-const supabase = createClient();
+interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: "CLIENT" | "GESTOR" | "ADMIN";
+}
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
+  session: { user: AuthUser } | null;
   profile: Profile | null;
   role: AppRole | null;
   isLoading: boolean;
@@ -22,97 +25,99 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function mapRole(role: AuthUser["role"]): AppRole {
+  if (role === "ADMIN" || role === "GESTOR") return "sales_manager";
+  return "customer";
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data: profileData } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
-    if (profileData) {
-      setProfile(profileData as Profile);
-    }
-
-    const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", userId).single();
-    if (roleData) {
-      setRole(roleData.role as AppRole);
-    }
-  }, []);
+  const loadMe = async () => {
+    const res = await fetch("/api/auth/me", { credentials: "include" });
+    const data = await res.json();
+    setUser(data.user ?? null);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, authSession) => {
-      setSession(authSession);
-      setUser(authSession?.user ?? null);
-
-      if (authSession?.user) {
-        setTimeout(() => {
-          fetchProfile(authSession.user.id);
-        }, 0);
-      } else {
-        setProfile(null);
-        setRole(null);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      if (currentSession?.user) {
-        fetchProfile(currentSession.user.id);
-      }
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+    loadMe();
+  }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
 
-    if (error) {
-      return { error: error as Error };
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      return { error: new Error(payload.error || "No se pudo iniciar sesión") };
     }
 
-    if (!data?.session?.user) {
-      return { error: new Error("No se pudo crear la sesión de usuario.") };
-    }
-
+    await loadMe();
     return { error: null };
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: { full_name: fullName },
-      },
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name: fullName, email, password }),
     });
 
-    return { error: (error as Error) ?? null };
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      return { error: new Error(payload.error || "No se pudo registrar") };
+    }
+
+    await loadMe();
+    return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setRole(null);
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    setUser(null);
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
-    }
+    await loadMe();
   };
 
+  const role = user ? mapRole(user.role) : null;
+  const profile = user
+    ? ({
+        id: user.id,
+        user_id: user.id,
+        full_name: user.name,
+        phone: null,
+        address: null,
+        city: null,
+        postal_code: null,
+        country: "Cuba",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as Profile)
+    : null;
+
   const value = useMemo(
-    () => ({ user, session, profile, role, isLoading, isManager: role === "sales_manager", signIn, signUp, signOut, refreshProfile }),
-    [user, session, profile, role, isLoading],
+    () => ({
+      user,
+      session: user ? { user } : null,
+      profile,
+      role,
+      isLoading,
+      isManager: user?.role === "ADMIN" || user?.role === "GESTOR",
+      signIn,
+      signUp,
+      signOut,
+      refreshProfile,
+    }),
+    [user, role, profile, isLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -120,8 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

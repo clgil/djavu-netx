@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  GESTOR
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  DEPOSIT_PAID
+  IN_PRODUCTION
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+
+  products  Product[]
+  orders    Order[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  price         Decimal  @db.Decimal(10, 2)
+  isCustom      Boolean  @default(false)
+  formulaConfig Json?
+  createdById   String
+  categoryId    String?
+  createdAt     DateTime @default(now())
+
+  createdBy User      @relation(fields: [createdById], references: [id])
+  category  Category? @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  total     Decimal     @db.Decimal(10, 2)
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String
+  quantity   Int      @default(1)
+  price      Decimal  @db.Decimal(10, 2)
+  customData Json?
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}

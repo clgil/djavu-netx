@@ -250,3 +250,51 @@ Nueva pantalla admin para:
 - eliminar productos
 - activar/desactivar
 - gestionar múltiples imágenes por URL (primera como principal)
+
+
+## Autenticación JWT (propia)
+
+El proyecto ahora incluye autenticación propia con JWT + cookie httpOnly:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `POST /api/auth/logout`
+
+La cookie usada es: `djavu_token`.
+
+## Prisma + MySQL
+
+Archivo principal: `prisma/schema.prisma`
+
+### Variables mínimas
+
+```bash
+DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/djavu_netx"
+JWT_SECRET="cambia-este-secreto-en-produccion"
+```
+
+### Comandos
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+## Uso por rol
+
+### Cliente (CLIENT)
+- Registro/login
+- Navegar catálogo
+- Comprar y gestionar pedidos
+
+### Gestor (GESTOR)
+- Todo cliente
+- Panel de gestión (`/gestor`)
+- Gestión de productos y seguimiento de órdenes
+
+### Administrador (ADMIN)
+- Acceso completo a `/admin`
+- Gestión global y reportes
+- Gestión de usuarios/roles
+
